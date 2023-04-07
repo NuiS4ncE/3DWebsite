@@ -1,3 +1,3 @@
 # portfoliowebsite
 
-Deployable 3D portfolio website. Work in progress.
+Deployable 3D website. Work in progress.

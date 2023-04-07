@@ -37,6 +37,28 @@ const cube = new THREE.Mesh(geometry, material);
 cube.position.set(0, 20, 0);
 scene.add(cube);
 
+// Cube oimo collider
+
+var body = world.add({
+    type: 'box',
+    size: cube.size,
+    pos: cube.pos,
+    rot: cube.rot,
+    move: true,
+    density: 1,
+    friction: 0.2,
+    restitution: 0.2,
+    belongsTo: 1,
+    collidesWith: 0xffffffff
+});
+
+var jointHinge = world.add({
+    type: 'jointHinge',
+    body1: cube,
+    body2: body
+})
+
+
 // Floor
 const plane = new THREE.PlaneGeometry(1000, 1000, 1, 1);
 const planeMaterial = new THREE.MeshBasicMaterial({
@@ -97,11 +119,12 @@ function render() {
     torus.rotation.x += 0.01;
     torus.rotation.y += 0.01;
 
-    /*if (cube.position.x > 3 || cube.position.y > 3 || cube.position.z > 3) {
-        cube.position.x = 0;
-        cube.position.y = 0;
-        cube.position.z = 0;
-    }*/
+    if (cube.rotation.x > 360 || cube.rotation.y > 360 || torus.rotation.x > 360 || torus.rotation.y > 360) {
+        cube.rotation.x = 0;
+        cube.rotation.y = 0;
+        torus.rotation.x = 0;
+        torus.rotation.y = 0;
+    }
 
     renderer.render(scene, camera);
     requestAnimationFrame(render);
