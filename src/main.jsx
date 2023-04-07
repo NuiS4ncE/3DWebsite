@@ -119,33 +119,65 @@ function render() {
     // Oimo physics render function
     world.step();
 
+    //setupKeyLogger();
+
     renderer.render(scene, camera);
     requestAnimationFrame(render);
 }
 
+function setupKeyLogger() {
+    document.onkeydown = function (e) {
+        console.log(e);
+    }
+}
+
 function setupKeyControls(cube) {
-    //var cube = scene.getObjectByName('cube');
+    // WASD movement only
     document.onkeydown = function (e) {
         switch (e.keyCode) {
-            // A or Left key
-            case 65: case 37:
-                cube.x += 1;
-                //console.log("I'm doing something");
-                break;
-            // W or Up key
-            case 87: case 38:
+            // W key
+            case 87:
                 cube.z += 1;
                 //console.log("I'm doing nothing");
                 break;
-            // D or Right key
-            case 68: case 39:
+            // A key
+            case 65:
+                cube.x += 1;
+                //console.log("I'm doing something");
+                break;
+            // S key
+            case 83:
+                cube.z -= 1;
+                //console.log("I'm doing anything");
+                break;
+            // D key
+            case 68:
                 cube.x -= 1;
                 //console.log("I'm doing everything");
                 break;
-            // S or Down key
-            case 83: case 40:
+            // W + A keys
+            case 87 && 65:
+                cube.x += 1;
+                cube.z += 1;
+                break;
+            // W + D keys
+            case 87 && 68:
+                cube.z += 1;
+                cube.x -= 1;
+                break;
+            // S + A keys
+            case 83 && 65:
+                cube.x += 1;
                 cube.z -= 1;
-                //console.log("I'm doing anything");
+                break;
+            // S + D keys
+            case 83 && 68:
+                cube.z -= 1;
+                cube.x -= 1;
+                break;
+            // Space bar
+            case 32:
+                cube.y += 10;
                 break;
         }
     }
