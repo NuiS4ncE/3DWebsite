@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import * as OIMO from 'oimo';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
+
 // Threejs scene
 const scene = new THREE.Scene();
 
@@ -154,26 +155,6 @@ function setupKeyControls(cube) {
             case 68:
                 cube.x -= 1;
                 //console.log("I'm doing everything");
-                break;
-            // W + A keys
-            case 87 && 65:
-                cube.x += 1;
-                cube.z += 1;
-                break;
-            // W + D keys
-            case 87 && 68:
-                cube.z += 1;
-                cube.x -= 1;
-                break;
-            // S + A keys
-            case 83 && 65:
-                cube.x += 1;
-                cube.z -= 1;
-                break;
-            // S + D keys
-            case 83 && 68:
-                cube.z -= 1;
-                cube.x -= 1;
                 break;
             // Space bar
             case 32:
