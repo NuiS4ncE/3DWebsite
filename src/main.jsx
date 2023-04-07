@@ -7,7 +7,7 @@ const scene = new THREE.Scene();
 
 // Camera setup
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(-45, 45, -30);
+camera.position.set( -45, 45, -30);
 scene.add(camera);
 
 // Oimo world setup
@@ -36,6 +36,8 @@ const material = new THREE.MeshBasicMaterial({ color: 0x0752FF });
 const cube = new THREE.Mesh(geometry, material);
 cube.position.set(0, 20, 0);
 scene.add(cube);
+
+
 
 // Cube Oimo collider
 const body = world.add({
@@ -106,15 +108,47 @@ function render() {
         torus.rotation.y = 0;
     }
 
+    setupKeyControls(body.position);
+
     // Update cube mesh position and rotation per rigidbody location
     cube.position.copy(body.getPosition());
     cube.quaternion.copy(body.getQuaternion());
+
+    camera.position.set(cube.position.x + -45, cube.position.y + 45, cube.position.z + -30);
 
     // Oimo physics render function
     world.step();
 
     renderer.render(scene, camera);
     requestAnimationFrame(render);
+}
+
+function setupKeyControls(cube) {
+    //var cube = scene.getObjectByName('cube');
+    document.onkeydown = function (e) {
+        switch (e.keyCode) {
+            // A or Left key
+            case 65: case 37:
+                cube.x += 1;
+                //console.log("I'm doing something");
+                break;
+            // W or Up key
+            case 87: case 38:
+                cube.z += 1;
+                //console.log("I'm doing nothing");
+                break;
+            // D or Right key
+            case 68: case 39:
+                cube.x -= 1;
+                //console.log("I'm doing everything");
+                break;
+            // S or Down key
+            case 83: case 40:
+                cube.z -= 1;
+                //console.log("I'm doing anything");
+                break;
+        }
+    }
 }
 
 function getRndInteger(min, max) {
