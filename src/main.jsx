@@ -38,12 +38,11 @@ cube.position.set(0, 20, 0);
 scene.add(cube);
 
 // Cube oimo collider
-
 var body = world.add({
     type: 'box',
-    size: cube.size,
-    pos: cube.pos,
-    rot: cube.rot,
+    size: [10, 10, 10],
+    pos: [0, 20, 0],
+    rot: [0, 0, 0],
     move: true,
     density: 1,
     friction: 0.2,
@@ -52,11 +51,7 @@ var body = world.add({
     collidesWith: 0xffffffff
 });
 
-var jointHinge = world.add({
-    type: 'jointHinge',
-    body1: cube,
-    body2: body
-})
+
 
 
 // Floor
@@ -74,7 +69,15 @@ scene.add(floor);
 
 // Floor collider in Oimo
 //const floorShape = new OIMO.BoxShape(1000, 0.1, 1000);
-const ground = world.add({ type: 'plane', size : [1000, 1, 1000], pos: [0, -0.1, 0], density: 1, friction: 0.9, restitution: 0.1 })
+const ground = world.add({
+    type: 'box',
+    size: [1000, 1, 1000],
+    pos: [0, -0.1, 0],
+    density: 1,
+    move: false,
+    friction: 0.9,
+    restitution: 0.1
+})
 
 // Create a OIMO.Body object for the floor with a static type
 /*const floorBody = new OIMO.Body({
@@ -125,7 +128,9 @@ function render() {
         torus.rotation.x = 0;
         torus.rotation.y = 0;
     }
-
+    cube.position.copy(body.getPosition());
+    cube.quaternion.copy(body.getQuaternion());
+    world.step();
     renderer.render(scene, camera);
     requestAnimationFrame(render);
 }
