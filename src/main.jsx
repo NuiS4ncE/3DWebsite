@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import * as OIMO from "oimo";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 // Threejs scene
 const scene = new THREE.Scene();
@@ -12,7 +13,7 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   1000
 );
-camera.position.set(-45, 45, -30);
+camera.position.set(15, 15, 30);
 scene.add(camera);
 
 // Oimo world setup
@@ -23,6 +24,7 @@ const world = new OIMO.World({
   worldscale: 1,
   random: true,
   info: true, // display statistique
+  gravity: [0, -9.81, 0],
 });
 
 // Renderer
@@ -35,16 +37,52 @@ document.body.appendChild(renderer.domElement);
 //var backgroundColor = 0xCDD3D6;
 //renderer.setClearColor(backgroundColor, 1);
 
-// Blue cube
-const geometry = new THREE.BoxGeometry(10, 10, 10);
+// Mixer variable for later use
+let mixer;
+
+let danceIndex;
+const trueValue = false;
+if(trueValue) {
+  danceIndex = 1;
+} else {
+  danceIndex = 0;
+
+}
+// GLTF loading
+const loader = new GLTFLoader();
+loader.load('src/GLBFiles/aliendancemixamo.glb', function ( gltf )
+{
+  // Scale the model
+  gltf.scene.scale.set(10, 10, 10);
+
+  // Add model to the scene
+  scene.add(gltf.scene);
+
+  // Add model to an AnimationMixer
+  mixer = new THREE.AnimationMixer(gltf.scene);
+
+  // Add one of the model's animations to mixer clips
+  const danceAction = mixer.clipAction(gltf.animations[danceIndex]);
+  
+  // Play the animation
+  danceAction.play();
+}, function ( xhr ) {
+  console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+} 
+, function ( error) {
+  console.error( error );
+});
+
+// Blue sphere
+const geometry = new THREE.SphereGeometry(10, 10, 10);
 const material = new THREE.MeshBasicMaterial({ color: 0x0752ff });
-const cube = new THREE.Mesh(geometry, material);
-cube.position.set(0, 20, 0);
-scene.add(cube);
+const sphere = new THREE.Mesh(geometry, material);
+sphere.position.set(0, 20, 0);
+//scene.add(sphere);
 
 // Cube Oimo collider
-const body = world.add({
-  type: "box",
+const sphereRigidBody = world.add({
+  type: "sphere",
   size: [10, 10, 10],
   pos: [0, 20, 0],
   rot: [0, 0, 0],
@@ -56,7 +94,10 @@ const body = world.add({
   collidesWith: 0xffffffff,
 });
 
+sphereRigidBody.connectMesh(sphere);
+
 // Floor
+const planeSize = [1000, 1, 1000];
 const plane = new THREE.PlaneGeometry(1000, 1000, 1, 1);
 const planeMaterial = new THREE.MeshBasicMaterial({
   color: 0xa2a7a9,
@@ -71,7 +112,7 @@ scene.add(floor);
 // Floor collider in Oimo
 const ground = world.add({
   type: "box",
-  size: [1000, 1, 1000],
+  size: planeSize,
   pos: [0, -0.1, 0],
   density: 1,
   move: false,
@@ -79,12 +120,14 @@ const ground = world.add({
   restitution: 0.1,
 });
 
-// Torus
-const geometry2 = new THREE.TorusGeometry(10, 3, 16, 100);
+//ground.connectMesh(floor);
+
+// Sphere 2
+const geometry2 = new THREE.SphereGeometry(8, 8, 8);
 const material2 = new THREE.MeshStandardMaterial({ color: 0xff6347 });
-const torus = new THREE.Mesh(geometry2, material2);
-torus.position.set(0, 30, 0);
-scene.add(torus);
+const sphere2 = new THREE.Mesh(geometry2, material2);
+sphere2.position.set(0, 40, 0);
+scene.add(sphere2);
 
 // Lights
 const pointLight = new THREE.PointLight(0xffffff);
@@ -99,36 +142,32 @@ const gridHelper = new THREE.GridHelper(200, 50);
 scene.add(lightHelper, gridHelper);
 
 // Scene mouse-paning controls
-const controls = new OrbitControls(camera, renderer.domElement);
+const orbitControls = new OrbitControls(camera, renderer.domElement);
 
+const clock = new THREE.Clock();
+// Main render loop
 function render() {
-  torus.rotation.x += 0.01;
-  torus.rotation.y += 0.01;
+  requestAnimationFrame(render);
 
-  if (torus.rotation.x > 360 || torus.rotation.y > 360) {
-    torus.rotation.x = 0;
-    torus.rotation.y = 0;
+  sphere2.rotation.x += 0.01;
+  sphere2.rotation.y += 0.01;
+
+  if (sphere2.rotation.x > 360 || sphere2.rotation.y > 360) {
+    sphere2.rotation.x = 0;
+    sphere2.rotation.y = 0;
   }
 
-  setupKeyControls(body.position);
-
-  // Update cube mesh position and rotation per rigidbody location
-  cube.position.copy(body.getPosition());
-  cube.quaternion.copy(body.getQuaternion());
-
-  camera.position.set(
-    cube.position.x + -45,
-    cube.position.y + 45,
-    cube.position.z + -30
-  );
+  const deltaTime = clock.getDelta();
 
   // Oimo physics render function
   world.step();
 
+  if(mixer) {
+    mixer.update(deltaTime);
+  }
   //setupKeyLogger();
 
   renderer.render(scene, camera);
-  requestAnimationFrame(render);
 }
 
 function setupKeyLogger() {
@@ -137,48 +176,5 @@ function setupKeyLogger() {
   };
 }
 
-function setupKeyControls(cube) {
-  // WASD movement only
-  document.onkeydown = function (e) {
-    if (e.key === "W") {
-      console.log("W key pressed");
-    }
-    switch (e.key) {
-      case "w":
-        cube.z += 1;
-        //console.log("Pressing W");
-        break;
-      case "a":
-        cube.x += 1;
-        break;
-      case "s":
-        cube.z -= 1;
-        break;
-      case "d":
-        cube.x -= 1;
-        break;
-      case " ":
-        cube.y += 10;
-        break;
-    }
-  };
-}
-
-function getRndInteger(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function Environment() {}
 
 render();
-/*import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App'
-import './index.css'
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-)
-*/
